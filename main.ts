@@ -9,5 +9,17 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const LINE =
   "I can stop time for exactly one second, and I already wasted it.";
 
-mkdirSync("/output", { recursive: true });
-writeFileSync("/output/entry.txt", LINE, "utf8");
+// Runtime guard: the entry line must be a real, short line — never empty,
+// never a runaway string. Fail loudly instead of writing a bad entry.
+if (LINE.trim().length === 0) {
+  throw new Error("entry line must not be empty");
+}
+if (LINE.length > 200) {
+  throw new Error(`entry line must be at most 200 characters (got ${LINE.length})`);
+}
+
+// Honour the grader's output directory when set, defaulting to /output.
+const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+
+mkdirSync(outputDir, { recursive: true });
+writeFileSync(`${outputDir}/entry.txt`, LINE, "utf8");
